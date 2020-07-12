@@ -1,38 +1,63 @@
-.App {
-  text-align: center;
+.plotContainer
+{
+    border : 0px dashed gray;
+    
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.axis
+{
+    stroke: black;
+    stroke-width: 1px;
+
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.plotArea
+{
+    fill : white;
+    
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+circle
+{
+    fill : rgb(82, 117, 233);
 }
 
-.App-link {
-  color: #61dafb;
+.axisControl
+{
+    width: 500px;
+    border: dashed 1px gray;
+    padding-left: 10px;
+
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+dl
+{
+    display: grid;
+    grid-template-columns: 100px 1fr;
+
+}
+
+dt
+{
+    grid-column: 1/ 2;
+}
+
+dd
+{
+    grid-column: 2/2;
+}
+
+.hilightBox
+{
+    fill-opacity : 0.4;
+    fill: skyblue;
+    border: 2px dashed blue;
+    pointer-events: none;
+}
+
+.inner 
+{
+    stroke-width:  1;
+    stroke-opacity: 0.2;
+    stroke-dasharray: 5,5;
 }
