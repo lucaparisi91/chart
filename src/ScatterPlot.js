@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useMemo } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import $ from "jquery";
 import * as d3 from 'd3';
 
 
@@ -34,12 +33,6 @@ yAxis.axis="y"
 
 
 
-const Figure = ()=>
-{
-
-}
-
-
 
 
 const useAxis= (settings) =>
@@ -47,14 +40,14 @@ const useAxis= (settings) =>
   const [xAxis,setXAxis] = useState(settings);
 
   let range=settings.range;
-  if (settings.axis == "y")
+  if (settings.axis === "y")
   {
     range=range.reverse();
   }
   
   const scale = d3.scaleLinear()
   .domain(xAxis.domain)
-  .range(xAxis.range);
+  .range(range);
 
   return [{...settings,scale},setXAxis]
 }
@@ -167,10 +160,7 @@ const Tick = ({orientation,width,innerWidth=0}) =>
 
 
     const tickWidth=6;
-    
-    
-    const width= range[1] - range[0];
-
+  
 
     const tickValues = scale.ticks()
     const tickRangeOffsets = tickValues.map( (offSet) => scale(offSet))
@@ -181,13 +171,13 @@ const Tick = ({orientation,width,innerWidth=0}) =>
     let tickTransform;
     let labelTransform;
     
-    if ( orientation == "bottom" )
+    if ( orientation === "bottom" )
     {
         tickTransform=`translate(${offSet},0)`;
         labelTransform=`translateY(${ 20}px)`;
 
     }
-    else if (orientation == "left")
+    else if (orientation === "left")
     {
         tickTransform=`translate(0,${offSet})`;
         labelTransform=`translateX(-${20}px)`;
@@ -212,11 +202,11 @@ const Tick = ({orientation,width,innerWidth=0}) =>
 
     const getEndPoints= (orientation,range) =>
     {
-        if ( orientation == "bottom" )
+        if ( orientation === "bottom" )
             {
             return [[range[0],0] , [range[1],0] ]
             }
-        else if (orientation == "left")
+        else if (orientation === "left")
             {
                 return [[0,range[0]] , [0,range[1]]]
             }
@@ -240,15 +230,14 @@ const Tick = ({orientation,width,innerWidth=0}) =>
                 </g>
 }
 
-const Scatter=({data,xLabel,yLabel,xScale,yScale,line}) =>
+
+const Scatter=({data,xLabel,yLabel,xScale,yScale,line,color="orange"}) =>
 {
     const transformedData = data.map( 
         (d) =>{
-            return [ xScale(d[xLabel]) , yScale(d[yLabel]) ]
+            return [ xScale(d[xLabel]) , yScale(d[yLabel])]
         }
     );
-
-    
 
     
 
@@ -259,7 +248,7 @@ const Scatter=({data,xLabel,yLabel,xScale,yScale,line}) =>
         kind="circle" 
         x={d[0]}
         y={d[1]} 
-
+        style={ {fill:color}}
         size={20}
 
         />
@@ -279,7 +268,7 @@ const Scatter=({data,xLabel,yLabel,xScale,yScale,line}) =>
          "strokeWidth": 2,
          "strokeLinejoin" :"round",
          "strokeLinecap": "round",
-         "stroke" : "blue",
+         "stroke" : color,
          "strokeDasharray":"6,6"
         }}
      > </path>;
@@ -291,18 +280,17 @@ const Scatter=({data,xLabel,yLabel,xScale,yScale,line}) =>
         </g>
 };
 
-const Dot = ({kind,size,x,y}) =>
+const Dot = ({kind,size,x,y,style={}}) =>
 {
 
     if (kind === "circle")
     {
         const r=Math.sqrt(size);
-        return <circle cx={x} cy={y} r={r} 
+        return <circle cx={x} cy={y} r={r}  style={style}
         />;
     }
 
 }
-
 
 
 const HilightBox = ( {left,right,bottom,top, xScale, yScale,show}) =>
@@ -328,26 +316,80 @@ const HilightBox = ( {left,right,bottom,top, xScale, yScale,show}) =>
 }
 
 
+function useDatas(data,hue)
+{
+ 
+
+  const labeledData= useMemo(()=>{
+    if ( (hue === undefined) || (hue === "undefined") )
+    {
+      return {"undefined" : data}
+    }
+
+      const nestedData= d3.nest().key( (d)=>{return d[hue]}).entries(data);
+      const datas={}
+    
+      for (const nest of nestedData)
+      {
+        datas[nest.key]=nest.values;
+      }
+    
+    return datas;
+
+  },[data,hue])
+
+  return labeledData;
+ 
+
+}
+
+
+function LabelControl({labels,selectedLabel,changeSelectedLabel,name})
+{
+
+  const options = labels.map((label)=>{ 
+    return  <option 
+            value={label} 
+            key={label} >
+              {label}
+              </option>
+
+  }); 
+
+
+  const handleChange = (e,newValue) =>
+  {
+    changeSelectedLabel(e.target.value);
+  }
+
+  return <div className="selectLabel">
+     {name} label 
+  <select value={selectedLabel} onChange={handleChange}>
+    {options}
+    </select>
+    </div>
+
+}
+
+
+
 function ScatterPlot( {data,settings=figureSettings})
   {
 
-  const [formattedData,setFormattedData]= useState(data);
-  
-  const [ box, setBox ] = useState(settings.box);
-  const [ xAxis , setXAxis]= useAxis( { ...settings.axis[0], range : [0,box.innerWidth()]});
-  const [ yAxis , setYAxis]= useAxis( { ...settings.axis[1], range : [0,box.innerHeight()],axis:"y"});
+    const [hueLabel,setHueLabel] = useState(settings.hue === undefined ? "undefined" : settings.hue);
+
+    const labeledData = useDatas(data,hueLabel);
+
+
+    
+    const [ box, setBox ] = useState(settings.box);
+    const [ xAxis , setXAxis]= useAxis( { ...settings.axis[0], range : [0,box.innerWidth()]});
+    const [ yAxis , setYAxis]= useAxis( { ...settings.axis[1], range : [0,box.innerHeight()],axis:"y"});
 
 
 
-  const [xLabel,setXLabel] = useState(data.columns[0]);
-  const [yLabel,setYLabel] = useState(data.columns[1] );
-
-
-  
-  const toogleZoom = ()=>
-  {
-    setZooming(!zooming);
-  };
+    const [xLabel,setXLabel] = useState(data.columns[0]);
+    const [yLabel,setYLabel] = useState(data.columns[1] );
 
 
   const [zooming,setZooming] = useState(true);
@@ -364,7 +406,6 @@ function ScatterPlot( {data,settings=figureSettings})
 
 
   },[data,yLabel]);
-
 
 
   useLayoutEffect( ()=>{
@@ -446,7 +487,7 @@ function ScatterPlot( {data,settings=figureSettings})
     
   }
 
-  
+  console.log(data.columns.concat([undefined]) )
 
   const reset= ()=>
   {
@@ -454,6 +495,19 @@ function ScatterPlot( {data,settings=figureSettings})
   }
 
 
+  const scatters = Object.keys(labeledData).map( (label,i)=>{
+    return <Scatter
+    data={labeledData[label]} 
+    xScale={xAxis.scale}
+    yScale={yAxis.scale}
+    xLabel={xLabel}
+    yLabel={yLabel}
+    key={label}
+    color={d3.schemeCategory10[i%10]}
+    />;
+
+
+  })
   return (
     <div className="scatterPlot">
       <svg width={box.width} height={box.height}  >
@@ -494,13 +548,11 @@ function ScatterPlot( {data,settings=figureSettings})
                         />
                 
                     <g  clipPath="url(#chartArea)">
-                        <Scatter
-                        data={data} 
-                        xScale={xAxis.scale}
-                        yScale={yAxis.scale}
-                        xLabel={xLabel}
-                        yLabel={yLabel}
-                        />
+                        
+                        {scatters}
+
+
+
                     </g>
                 </g>
 
@@ -534,6 +586,8 @@ function ScatterPlot( {data,settings=figureSettings})
 
 
       </svg>
+
+
       <button onClick= {()=>{setZooming(true)}} >
         Zoom
       </button>
@@ -541,7 +595,24 @@ function ScatterPlot( {data,settings=figureSettings})
       <button onClick= {reset} >
         Reset
       </button>
-        
+
+      < LabelControl labels={data.columns}
+        selectedLabel={xLabel}
+        changeSelectedLabel={setXLabel}
+        name="x" />
+
+      < LabelControl labels={data.columns}
+      selectedLabel={yLabel}
+      changeSelectedLabel={setYLabel}
+      name="y" />
+
+   
+
+< LabelControl labels={data.columns.concat(["undefined"]) }
+      selectedLabel={hueLabel}
+      changeSelectedLabel={setHueLabel}
+      name="Hue" />
+      
 
     </div>
   );
