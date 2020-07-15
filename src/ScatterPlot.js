@@ -356,7 +356,7 @@ function LabelControl({labels,selectedLabel,changeSelectedLabel,name})
 
   }); 
 
-
+  
   const handleChange = (e,newValue) =>
   {
     changeSelectedLabel(e.target.value);
@@ -371,7 +371,10 @@ function LabelControl({labels,selectedLabel,changeSelectedLabel,name})
 
 }
 
-
+const getColor= (index)=>
+{
+  return d3.schemeCategory10[index%10]
+}
 
 function ScatterPlot( {data,settings=figureSettings})
   {
@@ -494,6 +497,25 @@ function ScatterPlot( {data,settings=figureSettings})
     resize(xDataDomain,yDataDomain);
   }
 
+  const legendRows=Object.keys(labeledData).map((label,i)=>{
+    return <div className="row" key={label} >
+      <span>
+      <svg width="20" height="20" style={{display: "inline"}}>
+      <Dot 
+        kind="circle" 
+        x={10}
+        y={10}
+        style={ {fill:getColor(i)}}
+        size={20}
+
+        />
+      </svg>
+      {label}
+      </span>
+      </div>
+  })
+
+  
 
   const scatters = Object.keys(labeledData).map( (label,i)=>{
     return <Scatter
@@ -503,14 +525,18 @@ function ScatterPlot( {data,settings=figureSettings})
     xLabel={xLabel}
     yLabel={yLabel}
     key={label}
-    color={d3.schemeCategory10[i%10]}
+    color={getColor(i)}
     />;
 
 
   })
+
+
+
+
   return (
     <div className="scatterPlot">
-      <svg width={box.width} height={box.height}  >
+      <svg className="plotContainer" width={box.width} height={box.height}  >
 
 
       {/*  Plotting area */}
@@ -587,10 +613,7 @@ function ScatterPlot( {data,settings=figureSettings})
 
       </svg>
 
-
-      <button onClick= {()=>{setZooming(true)}} >
-        Zoom
-      </button>
+      
 
       <button onClick= {reset} >
         Reset
@@ -613,6 +636,9 @@ function ScatterPlot( {data,settings=figureSettings})
       changeSelectedLabel={setHueLabel}
       name="Hue" />
       
+<div className="legend">
+    {legendRows}
+</div>
 
     </div>
   );

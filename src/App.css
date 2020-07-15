@@ -1,6 +1,6 @@
 .plotContainer
 {
-    border : 0px dashed gray;
+    border : 2px dashed gray;
     
 }
 
@@ -60,4 +60,10 @@ dd
     stroke-width:  1;
     stroke-opacity: 0.2;
     stroke-dasharray: 5,5;
+}
+
+.legend
+{
+    border: 2px solid gray;
+    width:200px;
 }
