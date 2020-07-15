@@ -3,7 +3,6 @@ import logo from './logo.svg';
 import './App.css';
 import * as d3 from 'd3';
 
-
 const boxSettings = 
 {
     width : 600,
